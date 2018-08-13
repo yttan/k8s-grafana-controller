@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: grafana-controller
+  labels:
+    app: grafana-controller
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-controller
+  template:
+    metadata:
+      labels:
+        app: grafana-controller
+    spec:
+      containers:
+      - name: grafana-controller
+        image: grafana-controller:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 50m
+            memory: 25Mi
+        env:
+        - name: CONFIGPATH
+          value: "/controller"
+        - name: GRAFANAIP
+          value: "10.107.142.108"
