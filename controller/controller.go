@@ -15,11 +15,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Initiate clientset
+// InitClientSet initiates a client to interact with kubernetes
 func InitClientSet() (*kubernetes.Clientset, error) {
 	var kubeconfig *string
 	configPath := pathToConfig()
-	kubeconfig = flag.String("kubeconfig", filepath.Join(configPath, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	kubeconfig = flag.String("kubeconfig", filepath.Join(configPath, "config"), "(optional) absolute path to the kubeconfig file")
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -36,8 +36,9 @@ func InitClientSet() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
+//InitGrafanaClient initiates a client to interact with grafana
 func InitGrafanaClient() (*grafana.GrafanaClient, error) {
-	grafanaClient, err := grafana.NewGrafanaClient(grafanaIP())
+	grafanaClient, err := grafana.NewGrafanaClient(grafanaIP(), adminName(), adminPassword())
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func WatchGrafana(clientset *kubernetes.Clientset, grafanaClient *grafana.Grafan
 	glog.Flush()
 }
 
-// WatchTenants watches namespaces of K8S. If a new namespace is created, add tenant accordingly.
+// WatchTenants watches namespaces of kubernetes. If a new namespace is created, add tenant accordingly.
 func WatchTenants(clientset *kubernetes.Clientset, grafanaClient *grafana.GrafanaClient) {
 	var watchns watch.Interface
 	watchns, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{Watch: true})
@@ -126,4 +127,14 @@ func grafanaIP() string {
 func pathToConfig() string {
 	path := os.Getenv("CONFIG_PATH")
 	return path
+}
+
+func adminName() string {
+	name := os.Getenv("ADMIN_NAME")
+	return name
+}
+
+func adminPassword() string {
+	password := os.Getenv("ADMIN_PASSWORD")
+	return password
 }

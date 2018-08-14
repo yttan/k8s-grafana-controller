@@ -14,28 +14,34 @@ type GrafanaClient struct {
 }
 
 // NewGrafanaClient creates a new client to control grafana pod
-func NewGrafanaClient(grafanaIP string) (*GrafanaClient, error) {
+func NewGrafanaClient(grafanaIP string, user string, password string) (*GrafanaClient, error) {
 	if grafanaIP == "" {
-		return nil, errors.New("grafanaIP is not valid")
+		return nil, errors.New("grafanaIP is empty string")
+	}
+	if user == "" {
+		return nil, errors.New("user is empty string")
+	}
+	if password == "" {
+		return nil, errors.New("password is empty string")
 	}
 	return &GrafanaClient{
 		grafanaIP: grafanaIP,
-		user:      "admin",
-		password:  "admin",
+		user:      user,
+		password:  password,
 	}, nil
 }
 
-// PostTenant posts a new tenant to grafana
+// PostTenant posts a new tenant to grafana.
 func (c *GrafanaClient) PostTenant(namespace string, dbList []map[string]interface{}) {
 	c.PostOrg(namespace, c.grafanaIP)
 	orgID := c.GetOrgID(namespace, c.grafanaIP)
 	if orgID != 0 {
-		c.AdminSwitchOrg(orgID, c.grafanaIP)
-		c.PostDataSource(c.grafanaIP)
+		c.SwitchOrg(orgID, c.grafanaIP)
+		c.PostPrometheusDataSource(c.grafanaIP)
 		for _, db := range dbList {
 			dashboardStr := selectDashboard(db, namespace)
 			if dashboardStr != "" {
-				c.PostDashboard(dashboardStr, namespace, c.grafanaIP)
+				c.PostDashboard(dashboardStr, c.grafanaIP)
 			}
 		}
 		c.PostUser(namespace, c.grafanaIP)
@@ -59,7 +65,7 @@ func (c *GrafanaClient) DeleteTenant(namespace string) {
 // GetDashboardList gets all the dashboards in an organization
 func (c *GrafanaClient) GetDashboardList() []map[string]interface{} {
 	var dbList []map[string]interface{}
-	c.AdminSwitchOrg(1, c.grafanaIP)
+	c.SwitchOrg(1, c.grafanaIP)
 	allDbs := c.GetAllDashboards(c.grafanaIP)
 	if allDbs == nil {
 		return nil
@@ -69,7 +75,7 @@ func (c *GrafanaClient) GetDashboardList() []map[string]interface{} {
 	return dbList
 }
 
-// processDashboardList converts the string received to interface
+// processDashboardList converts the dashboardlist string received to interface
 func (c *GrafanaClient) processDashboardList(dsData []byte) []map[string]interface{} {
 	var dbList []map[string]interface{}
 	var ds interface{}
@@ -110,7 +116,7 @@ func selectDashboard(dashboard map[string]interface{}, namespace string) string 
 	}
 }
 
-// modify dashboard
+// modify dashboard before post them to grafana
 func processDashboard(dashboard map[string]interface{}, namespace string) string {
 	var nullString *string
 	dashboard["id"] = nullString
