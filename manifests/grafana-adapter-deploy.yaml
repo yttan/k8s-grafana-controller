@@ -33,11 +33,17 @@ spec:
         - name: CONFIG_PATH
           value: "/adapter"
         - name: GRAFANA_IP
-          value: "10.100.194.70"
+          value: "10.103.75.37"
         - name: PROMETHEUS_IP
-          value: "10.101.3.181"
+          value: "10.106.107.252"
         - name: ADMIN_NAME
-          value: "admin"
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: username
         - name: ADMIN_PASSWORD
-          value: "admin"
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: password
 
