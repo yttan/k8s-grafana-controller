@@ -90,6 +90,12 @@ func WatchGrafana(clientset *kubernetes.Clientset, grafanaClient *grafana.Grafan
 						} else {
 							for _, namespace := range namespaces.Items {
 								grafanaClient.PostTenant(namespace.Name, dbList)
+								id := grafanaClient.GetOrgID(namespace.Name, grafanaIP())
+								if id == 0 {
+									glog.Error("can not get org id")
+								} else {
+									grafanaClient.PostUserToOrg(adminName(), id, grafanaIP())
+								}
 								glog.Infoln("namespace " + namespace.Name + " added")
 							}
 						}
@@ -122,6 +128,12 @@ func WatchTenants(clientset *kubernetes.Clientset, grafanaClient *grafana.Grafan
 				switch event.Type {
 				case watch.Added:
 					grafanaClient.PostTenant(ns.Name, dbList)
+					id := grafanaClient.GetOrgID(ns.Name, grafanaIP())
+					if id == 0 {
+						glog.Error("can not get org id")
+					} else {
+						grafanaClient.PostUserToOrg(adminName(), id, grafanaIP())
+					}
 					glog.Infoln("namespace " + ns.Name + " added")
 				case watch.Deleted:
 					grafanaClient.DeleteTenant(ns.Name)
