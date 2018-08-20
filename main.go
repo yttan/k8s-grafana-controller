@@ -15,8 +15,12 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	controllerClient, err := controller.InitControllerClient(grafanaClient)
+	if err != nil {
+		glog.Fatal(err)
+	}
 	glog.Flush()
-	go controller.WatchTenants(clientset, grafanaClient)
-	go controller.WatchGrafana(clientset, grafanaClient)
+	go controller.WatchTenants(clientset, controllerClient)
+	go controller.WatchGrafana(clientset, controllerClient)
 	select {}
 }

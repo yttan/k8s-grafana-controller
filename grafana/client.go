@@ -8,7 +8,7 @@ import (
 )
 
 type GrafanaClient struct {
-	grafanaIP string
+	GrafanaIP string
 	user      string
 	password  string
 }
@@ -25,7 +25,7 @@ func NewGrafanaClient(grafanaIP string, user string, password string) (*GrafanaC
 		return nil, errors.New("password is empty string")
 	}
 	return &GrafanaClient{
-		grafanaIP: grafanaIP,
+		GrafanaIP: grafanaIP,
 		user:      user,
 		password:  password,
 	}, nil
@@ -33,40 +33,40 @@ func NewGrafanaClient(grafanaIP string, user string, password string) (*GrafanaC
 
 // PostTenant posts a new tenant to grafana.
 func (c *GrafanaClient) PostTenant(namespace string, dbList []map[string]interface{}) {
-	c.PostOrg(namespace, c.grafanaIP)
-	orgID := c.GetOrgID(namespace, c.grafanaIP)
+	c.PostOrg(namespace, c.GrafanaIP)
+	orgID := c.GetOrgID(namespace, c.GrafanaIP)
 	if orgID != 0 {
-		c.SwitchOrg(orgID, c.grafanaIP)
-		c.PostPrometheusDataSource(c.grafanaIP)
+		c.SwitchOrg(orgID, c.GrafanaIP)
+		c.PostPrometheusDataSource(c.GrafanaIP)
 		for _, db := range dbList {
 			dashboardStr := selectDashboard(db, namespace)
 			if dashboardStr != "" {
-				c.PostDashboard(dashboardStr, c.grafanaIP)
+				c.PostDashboard(dashboardStr, c.GrafanaIP)
 			}
 		}
-		c.PostUser(namespace, c.grafanaIP)
-		c.PostUserToOrg(namespace, orgID, c.grafanaIP)
-		userID := c.GetUserID(namespace, c.grafanaIP)
-		c.SwitchUserContext(userID, orgID, c.grafanaIP)
-		c.DeleteUserInOrg(userID, 1, c.grafanaIP)
+		c.PostUser(namespace, c.GrafanaIP)
+		c.PostUserToOrg(namespace, orgID, c.GrafanaIP)
+		userID := c.GetUserID(namespace, c.GrafanaIP)
+		c.SwitchUserContext(userID, orgID, c.GrafanaIP)
+		c.DeleteUserInOrg(userID, 1, c.GrafanaIP)
 	}
 	glog.Flush()
 }
 
 // DeleteTenant deletes a tenant in Grafana
 func (c *GrafanaClient) DeleteTenant(namespace string) {
-	orgID := c.GetOrgID(namespace, c.grafanaIP)
-	userID := c.GetUserID(namespace, c.grafanaIP)
-	c.DeleteOrg(orgID, c.grafanaIP)
-	c.DeleteUser(userID, c.grafanaIP)
+	orgID := c.GetOrgID(namespace, c.GrafanaIP)
+	userID := c.GetUserID(namespace, c.GrafanaIP)
+	c.DeleteOrg(orgID, c.GrafanaIP)
+	c.DeleteUser(userID, c.GrafanaIP)
 	glog.Flush()
 }
 
 // GetDashboardList gets all the dashboards in an organization
 func (c *GrafanaClient) GetDashboardList() []map[string]interface{} {
 	var dbList []map[string]interface{}
-	c.SwitchOrg(1, c.grafanaIP)
-	allDbs := c.GetAllDashboards(c.grafanaIP)
+	c.SwitchOrg(1, c.GrafanaIP)
+	allDbs := c.GetAllDashboards(c.GrafanaIP)
 	if allDbs == nil {
 		return nil
 	}
@@ -89,7 +89,7 @@ func (c *GrafanaClient) processDashboardList(dsData []byte) []map[string]interfa
 		for _, d := range r {
 			uid := d.(map[string]interface{})["uid"]
 			uidStr := uid.(string)
-			dashboard := c.GetDashboardByUID(uidStr, c.grafanaIP)
+			dashboard := c.GetDashboardByUID(uidStr, c.GrafanaIP)
 			if dashboard != nil {
 				dbList = append(dbList, dashboard)
 			}

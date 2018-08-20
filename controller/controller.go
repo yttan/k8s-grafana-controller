@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"flag"
 	"k8s-grafana-controller/grafana"
 	"os"
@@ -43,6 +44,21 @@ func InitGrafanaClient() (*grafana.GrafanaClient, error) {
 		return nil, err
 	}
 	return grafanaClient, nil
+}
+
+func InitControllerClient(admin *grafana.GrafanaClient) (*grafana.GrafanaClient, error) {
+	admin.PostUser("grafana-controller", admin.GrafanaIP)
+	id := admin.GetUserID("grafana-controller", admin.GrafanaIP)
+	if id == 0 {
+		return nil, errors.New("fail to post grafana controller")
+	}
+	admin.PutUserPermissionToAdmin(id, admin.GrafanaIP)
+	admin.PutUserPassword(id, admin.GrafanaIP, "grafanaControllerPassword12345")
+	controllerClient, err := grafana.NewGrafanaClient(admin.GrafanaIP, "grafana-controller", "grafanaControllerPassword12345")
+	if err != nil {
+		return nil, err
+	}
+	return controllerClient, nil
 }
 
 // WatchGrafana watches the grafana pod. If the pod is deleted, post existing tenants to ensure correctness

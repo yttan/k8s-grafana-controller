@@ -15,7 +15,7 @@ import (
 func (c *GrafanaClient) PostDashboard(dashboardStr string, grafanaIP string) {
 	endpoint := "/api/dashboards/db"
 	var requestBody = []byte(dashboardStr)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		glog.Error(err)
@@ -29,7 +29,7 @@ func (c *GrafanaClient) PostDashboard(dashboardStr string, grafanaIP string) {
 // GetAllDashboards gets all the dashboards in an organization. The received json does not include dashboard json data. To get dashboard json, use the uids you got and call GetDashboardByUID.
 func (c *GrafanaClient) GetAllDashboards(grafanaIP string) []byte {
 	endpoint := "/api/search?type=dash-db&query=&starred=false"
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -45,7 +45,7 @@ func (c *GrafanaClient) GetAllDashboards(grafanaIP string) []byte {
 // GetDashboardByUID gets the dashboard json from grafana and marshals the received string
 func (c *GrafanaClient) GetDashboardByUID(uid string, grafanaIP string) map[string]interface{} {
 	endpoint := "/api/dashboards/uid/" + uid
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -67,7 +67,7 @@ func (c *GrafanaClient) GetDashboardByUID(uid string, grafanaIP string) map[stri
 
 func (c *GrafanaClient) DeleteUser(userID int, grafanaIP string) {
 	endpoint := "/api/admin/users/" + strconv.Itoa(userID)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -80,7 +80,7 @@ func (c *GrafanaClient) DeleteUser(userID int, grafanaIP string) {
 
 func (c *GrafanaClient) DeleteOrg(orgID int, grafanaIP string) {
 	endpoint := "/api/orgs/" + strconv.Itoa(orgID)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -91,11 +91,40 @@ func (c *GrafanaClient) DeleteOrg(orgID int, grafanaIP string) {
 	}
 }
 
+// PutUserPermissionToAdmin puts a user to server admin
+func (c *GrafanaClient) PutUserPermissionToAdmin(userID int, grafanaIP string) {
+	endpoint := "/api/admin/users/" + strconv.Itoa(userID) + "/permissions"
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
+	var requestBody = []byte(`{"isGrafanaAdmin": true}`)
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		glog.Error(err)
+	}
+	status, respBody := tryRequest(req, 3)
+	if !reqSuccess(status, respBody) {
+		glog.Warningln("fail to put user permission")
+	}
+}
+
+func (c *GrafanaClient) PutUserPassword(userID int, grafanaIP string, password string) {
+	endpoint := "/api/admin/users/" + strconv.Itoa(userID) + "/password"
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
+	var requestBody = []byte(`{"password":"` + password + `"}`)
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		glog.Error(err)
+	}
+	status, respBody := tryRequest(req, 3)
+	if !reqSuccess(status, respBody) {
+		glog.Warningln("fail to put user password")
+	}
+}
+
 // PostOrg adds a new organization
 func (c *GrafanaClient) PostOrg(name string, grafanaIP string) {
 	var requestBody = []byte(`{"name":"` + name + `"}`)
 	endpoint := "/api/orgs"
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		glog.Error(err)
@@ -112,7 +141,7 @@ func (c *GrafanaClient) PostPrometheusDataSource(grafanaIP string) {
 	prometheus := prometheusIP() + ":9090"
 	var requestBody = []byte(`{"name":"prometheus","type":"prometheus","url":"http://` + prometheus + `","access":"proxy"}`)
 
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		glog.Error(err)
@@ -127,7 +156,7 @@ func (c *GrafanaClient) PostPrometheusDataSource(grafanaIP string) {
 func (c *GrafanaClient) PostUser(name string, grafanaIP string) {
 	endpoint := "/api/admin/users"
 	var requestBody = []byte(`{"name":"` + name + `","login":"` + name + `","password":"password"}`)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		glog.Error(err)
@@ -141,7 +170,7 @@ func (c *GrafanaClient) PostUser(name string, grafanaIP string) {
 func (c *GrafanaClient) GetUserID(name string, grafanaIP string) int {
 	var id int = 0
 	endpoint := "/api/users/lookup?loginOrEmail=" + name
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -160,7 +189,7 @@ func (c *GrafanaClient) GetUserID(name string, grafanaIP string) int {
 func (c *GrafanaClient) GetOrgID(name string, grafanaIP string) int {
 	var id int = 0
 	endpoint := "/api/orgs/name/" + name
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -179,7 +208,7 @@ func (c *GrafanaClient) GetOrgID(name string, grafanaIP string) int {
 // SwitchOrg changes the current organization of the client user.
 func (c *GrafanaClient) SwitchOrg(orgID int, grafanaIP string) {
 	endpoint := "/api/user/using/" + strconv.Itoa(orgID)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -194,7 +223,7 @@ func (c *GrafanaClient) SwitchOrg(orgID int, grafanaIP string) {
 func (c *GrafanaClient) PostUserToOrg(name string, orgID int, grafanaIP string) {
 	endpoint := "/api/orgs/" + strconv.Itoa(orgID) + "/users"
 	var requestBody = []byte(`{"loginOrEmail":"` + name + `","role":"Viewer"}`)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		glog.Error(err)
@@ -208,7 +237,7 @@ func (c *GrafanaClient) PostUserToOrg(name string, orgID int, grafanaIP string) 
 // SwitchUserContext changes the current organization of a user. To call this, the client user must be server admin.
 func (c *GrafanaClient) SwitchUserContext(userID int, orgID int, grafanaIP string) {
 	endpoint := "/api/users/" + strconv.Itoa(userID) + "/using/" + strconv.Itoa(orgID)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		glog.Error(err)
@@ -221,7 +250,7 @@ func (c *GrafanaClient) SwitchUserContext(userID int, orgID int, grafanaIP strin
 
 func (c *GrafanaClient) DeleteUserInOrg(userID int, orgID int, grafanaIP string) {
 	endpoint := "/api/orgs/" + strconv.Itoa(orgID) + "/users/" + strconv.Itoa(userID)
-	url := "http://" + c.user + ":" + c.password + "@" + c.grafanaIP + endpoint
+	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		glog.Error(err)

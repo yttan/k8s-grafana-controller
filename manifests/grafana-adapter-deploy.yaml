@@ -1,26 +1,26 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: grafana-adapter
+  name: grafana-controller
   labels:
-    app: grafana-adapter
+    app: grafana-controller
   namespace: monitoring
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: grafana-adapter
+      app: grafana-controller
   template:
     metadata:
       annotations:
         cni.daocloud.io/subnet: 192.168.0.0/16
       labels:
-        app: grafana-adapter
+        app: grafana-controller
     spec:
       hostNetwork: true
       containers:
-      - name: grafana-adapter
-        image: grafana-adapter:latest
+      - name: grafana-controller
+        image: grafana-controller:0.1
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -31,7 +31,7 @@ spec:
             memory: 25Mi
         env:
         - name: CONFIG_PATH
-          value: "/adapter"
+          value: "/controller"
         - name: GRAFANA_IP
           value: "10.103.75.37"
         - name: PROMETHEUS_IP
@@ -46,4 +46,3 @@ spec:
             secretKeyRef:
               name: grafana-admin
               key: password
-
