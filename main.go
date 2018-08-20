@@ -21,6 +21,6 @@ func main() {
 	}
 	glog.Flush()
 	go controller.WatchTenants(clientset, controllerClient)
-	go controller.WatchGrafana(clientset, controllerClient)
+	go controller.WatchGrafana(clientset, grafanaClient)
 	select {}
 }

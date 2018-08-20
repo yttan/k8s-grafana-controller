@@ -3,6 +3,7 @@ package grafana
 import (
 	"encoding/json"
 	"errors"
+	"os"
 
 	"github.com/golang/glog"
 )
@@ -45,7 +46,8 @@ func (c *GrafanaClient) PostTenant(namespace string, dbList []map[string]interfa
 			}
 		}
 		c.PostUser(namespace, c.GrafanaIP)
-		c.PostUserToOrg(namespace, orgID, c.GrafanaIP)
+		c.PostUserToOrg(namespace, orgID, c.GrafanaIP, "Viewer")
+		c.PostUserToOrg(adminName(), orgID, c.GrafanaIP, "Admin")
 		userID := c.GetUserID(namespace, c.GrafanaIP)
 		c.SwitchUserContext(userID, orgID, c.GrafanaIP)
 		c.DeleteUserInOrg(userID, 1, c.GrafanaIP)
@@ -156,4 +158,9 @@ func processTemplate(template map[string]interface{}, namespace string) map[stri
 	result := make(map[string]interface{})
 	result["list"] = tempList
 	return result
+}
+
+func adminName() string {
+	name := os.Getenv("ADMIN_NAME")
+	return name
 }

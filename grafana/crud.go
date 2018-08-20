@@ -220,9 +220,9 @@ func (c *GrafanaClient) SwitchOrg(orgID int, grafanaIP string) {
 }
 
 // PostUserToOrg adds a user to an organization.
-func (c *GrafanaClient) PostUserToOrg(name string, orgID int, grafanaIP string) {
+func (c *GrafanaClient) PostUserToOrg(name string, orgID int, grafanaIP string, role string) {
 	endpoint := "/api/orgs/" + strconv.Itoa(orgID) + "/users"
-	var requestBody = []byte(`{"loginOrEmail":"` + name + `","role":"Viewer"}`)
+	var requestBody = []byte(`{"loginOrEmail":"` + name + `","role":"` + role + `"}`)
 	url := "http://" + c.user + ":" + c.password + "@" + c.GrafanaIP + endpoint
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
