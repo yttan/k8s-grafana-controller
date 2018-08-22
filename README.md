@@ -2,7 +2,7 @@
 
 A grafana multi-tenancy management tool, written in Go with the [client-go](https://github.com/kubernetes/client-go) library.
 
-With the controller, a grafana organization is bond with a Kubernetes tenant. Each organization has a viewer and the viewer is only added to that specific organization. Dashboards in an organization only shows resources of a related tenant.
+With the controller, a grafana organization is bond with a Kubernetes tenant. Each organization has a viewer and the viewer is only added to that specific organization. Dashboards in an organization only show resources of a related tenant. In this way what a viewer can see is restricted to certain resources. 
 
 ![](docs/pics/user.svg)
 
