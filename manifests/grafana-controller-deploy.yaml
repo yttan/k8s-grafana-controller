@@ -12,30 +12,37 @@ spec:
       app: grafana-controller
   template:
     metadata:
-      annotations:
-        cni.daocloud.io/subnet: 192.168.0.0/16
       labels:
         app: grafana-controller
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/role
+                operator: In
+                values:
+                - mon
       hostNetwork: true
       containers:
       - name: grafana-controller
-        image: grafana-controller:0.1
+        image: 10.134.34.227/daocloud/grafana-controller:0.1
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            cpu: 100m
-            memory: 50Mi
+            cpu: 500m
+            memory: 500Mi
           requests:
-            cpu: 50m
-            memory: 25Mi
+            cpu: 500m
+            memory: 500Mi
         env:
         - name: CONFIG_PATH
           value: "/controller"
         - name: GRAFANA_IP
-          value: "10.103.75.37"
+          value: "10.110.150.206"
         - name: PROMETHEUS_IP
-          value: "10.106.107.252"
+          value: "10.103.171.47"
         - name: ADMIN_NAME
           valueFrom:
             secretKeyRef:
@@ -46,3 +53,4 @@ spec:
             secretKeyRef:
               name: grafana-admin
               key: password
+
