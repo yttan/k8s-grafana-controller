@@ -2,9 +2,9 @@
 
 A grafana multi-tenancy management tool, written in Go with the [client-go](https://github.com/kubernetes/client-go) library.
 
-With the controller, a grafana organization is bond with a Kubernetes tenant. Each organization has a viewer and the viewer is only added to that specific organization. Dashboards in an organization only show resources of a related tenant. In this way what a viewer can see is restricted to certain resources. 
+With the controller, a grafana organization is bond with a Kubernetes tenant. Each organization has a viewer and the viewer is only added to that specific organization. Dashboards in an organization only show resources of a related tenant. In this way what a viewer can see is restricted to certain resources.
 
-![](docs/pics/user.svg)
+![](docs/pics/user.png)
 
 A server admin controls all the organizations. The controller creates a server admin account and uses that account after initialization. So when the server admin changes password, the controller will not be affected.
 
@@ -14,7 +14,7 @@ In one organization, there are Pod, Deployment and StatefulSet dashboards. For n
 The controller watches Kubernetes namespaces and the grafana pod. It will create all the tenants if the grafana pod is deleted.
 And if a namespace is added/deleted, a grafana organization will be added/deleted accordingly.
 
-![namespace](docs/pics/namespace.svg)
+![namespace](docs/pics/namespace.png)
 
 ## Usage  
 
