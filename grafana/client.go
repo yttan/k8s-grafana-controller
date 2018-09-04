@@ -113,6 +113,9 @@ func selectDashboard(dashboard map[string]interface{}, namespace string) string 
 	case "StatefulSet":
 		dbstr := processDashboard(dashboard, namespace)
 		return dbstr
+	case "平台监控":
+		dbstr := processDashboard(dashboard, namespace)
+		return dbstr
 	default:
 		return ""
 	}
